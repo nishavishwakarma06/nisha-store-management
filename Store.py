@@ -1,33 +1,48 @@
 import sqlite3
 
-# Nisha Store Management - Day 25 Project
 conn = sqlite3.connect('nisha_store.db')
-c = conn.cursor()
+cursor = conn.cursor()
 
-c.execute('''CREATE TABLE IF NOT EXISTS sales
-             (name TEXT, amount INTEGER)''')
+cursor.execute('''CREATE TABLE IF NOT EXISTS sales
+                  (name TEXT, amount INTEGER)''')
 
-# Data insert
-sales = [('Anjali', 150), ('Riya', 300), ('Pooja', 180), ('Riya', 73)]
-c.executemany('INSERT INTO sales VALUES (?,?)', sales)
+def add_sale():
+    name = input("Customer ka naam: ")
+    amount = int(input("Kitne ki sale: "))
+    cursor.execute("INSERT INTO sales VALUES (?,?)", (name, amount))
+    conn.commit()
+    print(f"{name} ki sale add ho gayi!")
 
-# Total aur Average
-c.execute('SELECT SUM(amount) FROM sales')
-total = c.fetchone()[0]
+def show_report():
+    cursor.execute("SELECT * FROM sales")
+    data = cursor.fetchall()
+    if not data:
+        print("Abhi koi data nahi hai")
+        return
+    total = sum([row[1] for row in data])
+    avg = total // len(data)
+    top = max(data, key=lambda x: x[1])
+    print(f"\n--- HISAAB ---")
+    print(f"Total: {total}")
+    print(f"Average: {avg}")
+    print(f"Top Seller: {top[0]} - {top[1]}")
+    with open("hisaab.txt", "w") as f:
+        f.write(f"Total: {total}, Avg: {avg}, Top: {top[0]} {top[1]}")
 
-c.execute('SELECT AVG(amount) FROM sales')
-avg = c.fetchone()[0]
+while True:
+    print("\n--- NISHA STORE ---")
+    print("1. Nayi Sale Add Karo")
+    print("2. Report Dekho")
+    print("3. Exit")
+    choice = input("Aapka choice (1/2/3): ")
+    if choice == '1':
+        add_sale()
+    elif choice == '2':
+        show_report()
+    elif choice == '3':
+        print("Bye Bye! Dukaan band!")
+        break
+    else:
+        print("Galat choice!")
 
-c.execute('SELECT name, MAX(amount) FROM sales')
-top = c.fetchone()
-
-print(f"Total Sale: {total}")
-print(f"Average Sale: {avg:.0f}")
-print(f"Top Seller: {top[0]} - {top[1]}")
-
-# File me save karna
-with open('hisaab.txt', 'w') as f:
-    f.write(f"Total: {total}\nAverage: {avg:.0f}\nTop: {top[0]}")
-
-conn.commit()
 conn.close()
