@@ -1,25 +1,4 @@
-import sqlite3
-from datetime import datetime
 
-conn = sqlite3.connect('nisha_store.db')
-cursor = conn.cursor()
-
-cursor.execute('''CREATE TABLE IF NOT EXISTS sales
-                  (name TEXT, amount INTEGER)''')
-
-def add_sale():
-    name = input("Customer ka naam: ")
-    amount = int(input("Kitne ki sale: "))
-    cursor.execute("INSERT INTO sales VALUES (?,?)", (name, amount))
-    conn.commit()
-    print(f"{name} ki sale add ho gayi!")
-
-def show_report():
-    cursor.execute("SELECT * FROM sales")
-    data = cursor.fetchall()
-    if not data:
-        print("Abhi koi data nahi hai")
-        return
 
     total = sum([row[1] for row in data])
     avg = total // len(data)
